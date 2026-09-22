@@ -26,7 +26,7 @@ public class UserProfile {
     private String firstName;
     private String lastName;
     private String dateOfBirth;
-    private String gender;
+    private String address;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", unique = true)

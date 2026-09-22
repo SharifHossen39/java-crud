@@ -1,14 +1,16 @@
 package com.example.SocialMedia.payload.request;
 
+import com.example.SocialMedia.entity.TransactionStatus;
+import com.example.SocialMedia.entity.TransactionType;
+
 import java.math.BigDecimal;
 
 public record TransactionRequest(
         String transactionReference,
         BigDecimal amount,
-        String type,
-        String status,
+        TransactionType type,
+        TransactionStatus status,
         String description,
-        Long userId,
         Long senderWalletId,
         Long receiverWalletId) {
 }

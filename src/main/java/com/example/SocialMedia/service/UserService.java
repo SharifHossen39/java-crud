@@ -12,8 +12,8 @@ public class UserService {
     private UserRepository userRepository;
 
     public void createUser(User user) {
-        if (user.getUserProfile() != null) {
-            user.getUserProfile().setUser(user);
+        if (user.getProfile() != null) {
+            user.getProfile().setUser(user);
         }
 
         if (user.getWallet() != null) {

@@ -2,6 +2,7 @@ package com.example.SocialMedia.entity;
 
 import com.example.SocialMedia.repository.TransactionRepository;
 import com.example.SocialMedia.repository.UserRepository;
+import com.example.SocialMedia.repository.WalletRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
-class UserTransactionRelationshipTests {
+class WalletTransactionRelationshipTests {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private WalletRepository walletRepository;
 
     @Autowired
     private TransactionRepository transactionRepository;
@@ -27,33 +31,35 @@ class UserTransactionRelationshipTests {
     private EntityManager entityManager;
 
     @Test
-    void userCanHaveManyTransactionsAndTransactionHasOneUser() {
+    void walletCanHaveManySentAndReceivedTransactions() {
         User sender = userWithWallet("sender", "SENDER-WALLET");
         User receiver = userWithWallet("receiver", "RECEIVER-WALLET");
         userRepository.saveAndFlush(sender);
         userRepository.saveAndFlush(receiver);
 
         Transaction first = transaction(
-                "TXN-1001", sender, sender.getWallet(), receiver.getWallet());
+                "TXN-1001", sender.getWallet(), receiver.getWallet());
         Transaction second = transaction(
-                "TXN-1002", sender, sender.getWallet(), receiver.getWallet());
+                "TXN-1002", sender.getWallet(), receiver.getWallet());
         transactionRepository.saveAllAndFlush(List.of(first, second));
 
-        Long senderId = sender.getId();
+        Long senderWalletId = sender.getWallet().getId();
+        Long receiverWalletId = receiver.getWallet().getId();
         entityManager.clear();
 
-        User reloadedSender = userRepository.findById(senderId).orElseThrow();
-        assertThat(reloadedSender.getTransactions()).hasSize(2);
-        assertThat(first.getUser().getId()).isEqualTo(senderId);
-        assertThat(first.getSenderWallet().getWalletNumber()).isEqualTo("SENDER-WALLET");
-        assertThat(first.getReceiverWallet().getWalletNumber()).isEqualTo("RECEIVER-WALLET");
-        assertThat(first.getCreatedAt()).isNotNull();
+        Wallet reloadedSenderWallet = walletRepository.findById(senderWalletId).orElseThrow();
+        Wallet reloadedReceiverWallet = walletRepository.findById(receiverWalletId).orElseThrow();
+        assertThat(reloadedSenderWallet.getSentTransactions()).hasSize(2);
+        assertThat(reloadedReceiverWallet.getReceivedTransactions()).hasSize(2);
+        assertThat(reloadedSenderWallet.getSentTransactions().get(0).getReceiverWallet().getId())
+                .isEqualTo(receiverWalletId);
+        assertThat(reloadedSenderWallet.getSentTransactions().get(0).getCreatedAt()).isNotNull();
     }
 
-    private User userWithWallet(String userName, String walletNumber) {
+    private User userWithWallet(String username, String walletNumber) {
         User user = new User();
-        user.setUserName(userName);
-        user.setEmail(userName + "@example.com");
+        user.setUsername(username);
+        user.setEmail(username + "@example.com");
 
         Wallet wallet = new Wallet();
         wallet.setWalletNumber(walletNumber);
@@ -66,14 +72,13 @@ class UserTransactionRelationshipTests {
     }
 
     private Transaction transaction(
-            String reference, User user, Wallet senderWallet, Wallet receiverWallet) {
+            String reference, Wallet senderWallet, Wallet receiverWallet) {
         Transaction transaction = new Transaction();
         transaction.setTransactionReference(reference);
         transaction.setAmount(new BigDecimal("100.00"));
-        transaction.setType("TRANSFER");
-        transaction.setStatus("COMPLETED");
+        transaction.setType(TransactionType.SEND_MONEY);
+        transaction.setStatus(TransactionStatus.SUCCESS);
         transaction.setDescription("Relationship test transfer");
-        transaction.setUser(user);
         transaction.setSenderWallet(senderWallet);
         transaction.setReceiverWallet(receiverWallet);
         return transaction;

@@ -22,21 +22,21 @@ class UserProfileRelationshipTests {
     @Test
     void savingUserCascadesToItsProfile() {
         User user = new User();
-        user.setUserName("relationship-test-user");
+        user.setUsername("relationship-test-user");
         user.setEmail("relationship@example.com");
 
         UserProfile profile = new UserProfile();
         profile.setFirstName("Test");
         profile.setLastName("User");
 
-        user.setUserProfile(profile);
+        user.setProfile(profile);
         profile.setUser(user);
 
         User savedUser = userRepository.saveAndFlush(user);
 
         UserProfile savedProfile = userProfileRepository.findAll().get(0);
         assertThat(savedProfile.getUser().getId()).isEqualTo(savedUser.getId());
-        assertThat(savedUser.getUserProfile()).isSameAs(profile);
+        assertThat(savedUser.getProfile()).isSameAs(profile);
     }
 
     @Test

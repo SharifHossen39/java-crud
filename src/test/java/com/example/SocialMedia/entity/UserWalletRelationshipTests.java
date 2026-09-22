@@ -24,7 +24,7 @@ class UserWalletRelationshipTests {
     @Test
     void savingUserCascadesToItsWallet() {
         User user = new User();
-        user.setUserName("wallet-test-user");
+        user.setUsername("wallet-test-user");
         user.setEmail("wallet@example.com");
 
         Wallet wallet = new Wallet();

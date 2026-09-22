@@ -32,7 +32,7 @@ class TransactionControllerIntegrationTests {
     private TransactionRepository transactionRepository;
 
     @Test
-    void createsTransactionWithUserAndWalletRelationships() throws Exception {
+    void createsTransactionWithSenderAndReceiverWalletRelationships() throws Exception {
         User sender = userWithWallet("api-sender", "API-SENDER-WALLET");
         User receiver = userWithWallet("api-receiver", "API-RECEIVER-WALLET");
         userRepository.saveAndFlush(sender);
@@ -45,15 +45,13 @@ class TransactionControllerIntegrationTests {
                         {
                           "transactionReference": "API-TXN-1001",
                           "amount": 100.00,
-                          "type": "TRANSFER",
-                          "status": "COMPLETED",
+                          "type": "SEND_MONEY",
+                          "status": "SUCCESS",
                           "description": "JPA relationship example",
-                          "userId": %d,
                           "senderWalletId": %d,
                           "receiverWalletId": %d
                         }
                         """.formatted(
-                        sender.getId(),
                         sender.getWallet().getId(),
                         receiver.getWallet().getId())))
                 .build();
@@ -66,7 +64,6 @@ class TransactionControllerIntegrationTests {
         assertThat(transactionRepository.findAll())
                 .singleElement()
                 .satisfies(transaction -> {
-                    assertThat(transaction.getUser().getId()).isEqualTo(sender.getId());
                     assertThat(transaction.getSenderWallet().getId())
                             .isEqualTo(sender.getWallet().getId());
                     assertThat(transaction.getReceiverWallet().getId())
@@ -74,10 +71,10 @@ class TransactionControllerIntegrationTests {
                 });
     }
 
-    private User userWithWallet(String userName, String walletNumber) {
+    private User userWithWallet(String username, String walletNumber) {
         User user = new User();
-        user.setUserName(userName);
-        user.setEmail(userName + "@example.com");
+        user.setUsername(username);
+        user.setEmail(username + "@example.com");
 
         Wallet wallet = new Wallet();
         wallet.setWalletNumber(walletNumber);

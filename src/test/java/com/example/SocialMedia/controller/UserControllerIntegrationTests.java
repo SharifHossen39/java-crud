@@ -37,16 +37,16 @@ class UserControllerIntegrationTests {
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString("""
                         {
-                          "userName": "Mehedi001",
+                          "username": "Mehedi001",
                           "email": "mehedi@gmail.com",
                           "password": "1234",
                           "phoneNumber": "0123456789",
                           "status": "active",
-                          "userProfile": {
+                          "profile": {
                             "firstName": "Mehedi",
                             "lastName": "Hasan",
                             "dateOfBirth": "07/06/1998",
-                            "gender": "male"
+                            "address": "Dhaka"
                           },
                           "wallet": {
                             "walletNumber": "WALLET-1001",
@@ -67,6 +67,7 @@ class UserControllerIntegrationTests {
                 .singleElement()
                 .extracting(user -> user.getEmail())
                 .isEqualTo("mehedi@gmail.com");
+        assertThat(userRepository.findAll().get(0).getCreatedAt()).isNotNull();
         assertThat(userProfileRepository.findAll())
                 .singleElement()
                 .satisfies(profile -> {
