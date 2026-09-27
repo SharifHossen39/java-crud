@@ -5,8 +5,10 @@ import com.example.SocialMedia.entity.User;
 import com.example.SocialMedia.repository.RoleRepository;
 import com.example.SocialMedia.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashSet;
 import java.util.Locale;
@@ -33,6 +35,14 @@ public class UserService {
 
         user.setRoles(resolveRoles(user.getRoles()));
         userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserById(Long id) {
+        return userRepository.findDetailsById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found with id: " + id));
     }
 
     private Set<Role> resolveRoles(Set<Role> requestedRoles) {

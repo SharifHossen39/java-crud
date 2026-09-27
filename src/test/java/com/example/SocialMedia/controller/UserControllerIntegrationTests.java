@@ -36,7 +36,7 @@ class UserControllerIntegrationTests {
     private RoleRepository roleRepository;
 
     @Test
-    void createUserPersistsTheUser() throws Exception {
+    void createAndGetUserDetails() throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + port + "/api/user/createUser"))
                 .header("Content-Type", "application/json")
@@ -98,5 +98,32 @@ class UserControllerIntegrationTests {
                     assertThat(wallet.getBalance()).isEqualByComparingTo("500.00");
                     assertThat(wallet.getUser().getId()).isNotNull();
                 });
+
+        Long userId = userRepository.findAll().get(0).getId();
+        HttpRequest getRequest = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/user/" + userId))
+                .GET()
+                .build();
+
+        HttpResponse<String> getResponse = HttpClient.newHttpClient()
+                .send(getRequest, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(getResponse.statusCode()).isEqualTo(200);
+        assertThat(getResponse.body())
+                .contains("\"username\":\"Mehedi001\"")
+                .contains("\"gender\":\"Male\"")
+                .contains("\"walletNumber\":\"WALLET-1001\"")
+                .contains("\"name\":\"ADMIN\"")
+                .doesNotContain("\"password\"");
+
+        HttpRequest missingUserRequest = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/user/999999"))
+                .GET()
+                .build();
+
+        HttpResponse<String> missingUserResponse = HttpClient.newHttpClient()
+                .send(missingUserRequest, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(missingUserResponse.statusCode()).isEqualTo(404);
     }
 }
