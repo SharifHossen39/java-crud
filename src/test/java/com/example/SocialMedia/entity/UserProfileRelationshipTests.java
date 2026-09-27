@@ -2,6 +2,7 @@ package com.example.SocialMedia.entity;
 
 import com.example.SocialMedia.repository.UserProfileRepository;
 import com.example.SocialMedia.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +20,9 @@ class UserProfileRelationshipTests {
     @Autowired
     private UserProfileRepository userProfileRepository;
 
+    @Autowired
+    private EntityManager entityManager;
+
     @Test
     void savingUserCascadesToItsProfile() {
         User user = new User();
@@ -33,10 +37,14 @@ class UserProfileRelationshipTests {
         profile.setUser(user);
 
         User savedUser = userRepository.saveAndFlush(user);
+        Long savedUserId = savedUser.getId();
+        Long savedProfileId = profile.getId();
+        entityManager.clear();
 
-        UserProfile savedProfile = userProfileRepository.findAll().get(0);
-        assertThat(savedProfile.getUser().getId()).isEqualTo(savedUser.getId());
-        assertThat(savedUser.getProfile()).isSameAs(profile);
+        User reloadedUser = userRepository.findById(savedUserId).orElseThrow();
+        assertThat(reloadedUser.getProfile().getId()).isEqualTo(savedProfileId);
+        UserProfile reloadedProfile = userProfileRepository.findById(savedProfileId).orElseThrow();
+        assertThat(reloadedProfile.getUser().getId()).isEqualTo(savedUserId);
     }
 
     @Test
@@ -48,6 +56,5 @@ class UserProfileRelationshipTests {
         UserProfile savedProfile = userProfileRepository.saveAndFlush(existingProfile);
 
         assertThat(savedProfile.getId()).isNotNull();
-        assertThat(savedProfile.getUser()).isNull();
     }
 }

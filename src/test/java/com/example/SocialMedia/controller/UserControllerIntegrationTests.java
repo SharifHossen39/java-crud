@@ -1,5 +1,7 @@
 package com.example.SocialMedia.controller;
 
+import com.example.SocialMedia.entity.Role;
+import com.example.SocialMedia.repository.RoleRepository;
 import com.example.SocialMedia.repository.UserRepository;
 import com.example.SocialMedia.repository.UserProfileRepository;
 import com.example.SocialMedia.repository.WalletRepository;
@@ -30,6 +32,9 @@ class UserControllerIntegrationTests {
     @Autowired
     private WalletRepository walletRepository;
 
+    @Autowired
+    private RoleRepository roleRepository;
+
     @Test
     void createUserPersistsTheUser() throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
@@ -46,6 +51,7 @@ class UserControllerIntegrationTests {
                             "firstName": "Mehedi",
                             "lastName": "Hasan",
                             "dateOfBirth": "07/06/1998",
+                            "gender": "Male",
                             "address": "Dhaka"
                           },
                           "wallet": {
@@ -53,7 +59,12 @@ class UserControllerIntegrationTests {
                             "balance": 500.00,
                             "currency": "BDT",
                             "status": "ACTIVE"
-                          }
+                          },
+                          "roles": [
+                            {
+                              "name": "Admin"
+                            }
+                          ]
                         }
                         """))
                 .build();
@@ -68,11 +79,17 @@ class UserControllerIntegrationTests {
                 .extracting(user -> user.getEmail())
                 .isEqualTo("mehedi@gmail.com");
         assertThat(userRepository.findAll().get(0).getCreatedAt()).isNotNull();
+        assertThat(roleRepository.findAll())
+                .singleElement()
+                .extracting(Role::getName)
+                .isEqualTo("ADMIN");
         assertThat(userProfileRepository.findAll())
                 .singleElement()
                 .satisfies(profile -> {
                     assertThat(profile.getFirstName()).isEqualTo("Mehedi");
-                    assertThat(profile.getUser().getId()).isNotNull();
+                    assertThat(profile.getGender()).isEqualTo("Male");
+                    assertThat(profile.getUser().getId())
+                            .isEqualTo(userRepository.findAll().get(0).getId());
                 });
         assertThat(walletRepository.findAll())
                 .singleElement()
