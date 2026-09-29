@@ -2,8 +2,10 @@ package com.example.SocialMedia.service;
 
 import com.example.SocialMedia.entity.Role;
 import com.example.SocialMedia.entity.User;
+import com.example.SocialMedia.entity.Wallet;
 import com.example.SocialMedia.repository.RoleRepository;
 import com.example.SocialMedia.repository.UserRepository;
+import com.example.SocialMedia.repository.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,9 @@ public class UserService {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private WalletRepository walletRepository;
 
     @Transactional
     public void createUser(User user) {
@@ -43,6 +48,14 @@ public class UserService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "User not found with id: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public Wallet getWalletByUserId(Long userId) {
+        return walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Wallet not found for user id: " + userId));
     }
 
     private Set<Role> resolveRoles(Set<Role> requestedRoles) {

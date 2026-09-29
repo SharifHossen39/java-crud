@@ -116,6 +116,24 @@ class UserControllerIntegrationTests {
                 .contains("\"name\":\"ADMIN\"")
                 .doesNotContain("\"password\"");
 
+        HttpRequest walletRequest = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/user/" + userId + "/wallet"))
+                .GET()
+                .build();
+
+        HttpResponse<String> walletResponse = HttpClient.newHttpClient()
+                .send(walletRequest, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(walletResponse.statusCode()).isEqualTo(200);
+        assertThat(walletResponse.body())
+                .contains("\"walletNumber\":\"WALLET-1001\"")
+                .contains("\"balance\":500.00")
+                .contains("\"currency\":\"BDT\"")
+                .contains("\"status\":\"ACTIVE\"")
+                .doesNotContain("\"username\"")
+                .doesNotContain("\"profile\"")
+                .doesNotContain("\"roles\"");
+
         HttpRequest missingUserRequest = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + port + "/api/user/999999"))
                 .GET()
@@ -125,5 +143,15 @@ class UserControllerIntegrationTests {
                 .send(missingUserRequest, HttpResponse.BodyHandlers.ofString());
 
         assertThat(missingUserResponse.statusCode()).isEqualTo(404);
+
+        HttpRequest missingWalletRequest = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/user/999999/wallet"))
+                .GET()
+                .build();
+
+        HttpResponse<String> missingWalletResponse = HttpClient.newHttpClient()
+                .send(missingWalletRequest, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(missingWalletResponse.statusCode()).isEqualTo(404);
     }
 }
