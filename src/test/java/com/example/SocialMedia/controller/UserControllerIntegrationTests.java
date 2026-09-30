@@ -153,5 +153,32 @@ class UserControllerIntegrationTests {
                 .send(missingWalletRequest, HttpResponse.BodyHandlers.ofString());
 
         assertThat(missingWalletResponse.statusCode()).isEqualTo(404);
+
+        HttpRequest userByWalletRequest = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/user/by-wallet/WALLET-1001"))
+                .GET()
+                .build();
+
+        HttpResponse<String> userByWalletResponse = HttpClient.newHttpClient()
+                .send(userByWalletRequest, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(userByWalletResponse.statusCode()).isEqualTo(200);
+        assertThat(userByWalletResponse.body())
+                .contains("\"username\":\"Mehedi001\"")
+                .contains("\"phoneNumber\":\"0123456789\"");
+        assertThat(userByWalletResponse.body())
+                .doesNotContain("\"password\"")
+                .doesNotContain("\"balance\"")
+                .doesNotContain("\"walletNumber\"");
+
+        HttpRequest missingWalletUserRequest = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/user/by-wallet/NON-EXISTENT"))
+                .GET()
+                .build();
+
+        HttpResponse<String> missingWalletUserResponse = HttpClient.newHttpClient()
+                .send(missingWalletUserRequest, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(missingWalletUserResponse.statusCode()).isEqualTo(404);
     }
 }

@@ -3,6 +3,7 @@ package com.example.SocialMedia.service;
 import com.example.SocialMedia.entity.Role;
 import com.example.SocialMedia.entity.User;
 import com.example.SocialMedia.entity.Wallet;
+import com.example.SocialMedia.payload.response.UserWalletInfoResponse;
 import com.example.SocialMedia.repository.RoleRepository;
 import com.example.SocialMedia.repository.UserRepository;
 import com.example.SocialMedia.repository.WalletRepository;
@@ -56,6 +57,14 @@ public class UserService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Wallet not found for user id: " + userId));
+    }
+
+    @Transactional(readOnly = true)
+    public UserWalletInfoResponse getUserInfoByWalletNumber(String walletNumber) {
+        return userRepository.findUserInfoByWalletNumber(walletNumber)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found for wallet number: " + walletNumber));
     }
 
     private Set<Role> resolveRoles(Set<Role> requestedRoles) {
