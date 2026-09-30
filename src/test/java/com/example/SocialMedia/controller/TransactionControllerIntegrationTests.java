@@ -69,6 +69,70 @@ class TransactionControllerIntegrationTests {
                     assertThat(transaction.getReceiverWallet().getId())
                             .isEqualTo(receiver.getWallet().getId());
                 });
+
+        // Test getting transactions for the sender user
+        HttpRequest senderTxnRequest = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/user/" + sender.getId() + "/transactions"))
+                .GET()
+                .build();
+
+        HttpResponse<String> senderTxnResponse = HttpClient.newHttpClient()
+                .send(senderTxnRequest, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(senderTxnResponse.statusCode()).isEqualTo(200);
+        assertThat(senderTxnResponse.body())
+                .contains("\"transactionReference\":\"API-TXN-1001\"")
+                .contains("\"senderUsername\":\"api-sender\"")
+                .contains("\"receiverUsername\":\"api-receiver\"")
+                .contains("\"amount\":100.00");
+
+        // Test getting transactions for the receiver user
+        HttpRequest receiverTxnRequest = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/user/" + receiver.getId() + "/transactions"))
+                .GET()
+                .build();
+
+        HttpResponse<String> receiverTxnResponse = HttpClient.newHttpClient()
+                .send(receiverTxnRequest, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(receiverTxnResponse.statusCode()).isEqualTo(200);
+        assertThat(receiverTxnResponse.body())
+                .contains("\"transactionReference\":\"API-TXN-1001\"")
+                .contains("\"senderUsername\":\"api-sender\"")
+                .contains("\"receiverUsername\":\"api-receiver\"");
+
+        // Test non-existent user transactions (returns 404)
+        HttpRequest missingUserTxnRequest = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/user/999999/transactions"))
+                .GET()
+                .build();
+
+        HttpResponse<String> missingUserTxnResponse = HttpClient.newHttpClient()
+                .send(missingUserTxnRequest, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(missingUserTxnResponse.statusCode()).isEqualTo(404);
+
+        // Test non-existent wallet IDs (returns 404 instead of 500)
+        HttpRequest missingWalletRequest = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/transactions"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("""
+                        {
+                          "transactionReference": "45678767",
+                          "amount": 55,
+                          "type": "SEND_MONEY",
+                          "status": "PENDING",
+                          "description": "emni emni",
+                          "senderWalletId": 5676575678347,
+                          "receiverWalletId": 654567654345
+                        }
+                        """))
+                .build();
+
+        HttpResponse<String> missingWalletResponse = HttpClient.newHttpClient()
+                .send(missingWalletRequest, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(missingWalletResponse.statusCode()).isEqualTo(404);
     }
 
     private User userWithWallet(String username, String walletNumber) {
