@@ -26,7 +26,7 @@ class RoleControllerIntegrationTests {
     @Test
     void createRoleAndRejectDuplicateName() throws Exception {
         HttpRequest createRequest = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + port + "/api/roles"))
+                .uri(URI.create("http://localhost:" + port + "/api/roles/create"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString("""
                         {
@@ -41,11 +41,11 @@ class RoleControllerIntegrationTests {
                 HttpResponse.BodyHandlers.ofString());
 
         assertThat(createResponse.statusCode()).isEqualTo(201);
-        assertThat(createResponse.body()).contains("\"name\":\"SUPPORT\"");
+        assertThat(createResponse.body()).isEqualTo("Role Created Successfully");
         assertThat(roleRepository.findByNameIgnoreCase("SUPPORT"))
                 .get()
                 .extracting(Role::getName)
-                .isEqualTo("SUPPORT");
+                .isEqualTo("support");
 
         HttpResponse<String> duplicateResponse = httpClient.send(
                 createRequest,

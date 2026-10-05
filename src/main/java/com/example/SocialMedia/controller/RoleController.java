@@ -1,14 +1,19 @@
 package com.example.SocialMedia.controller;
 
 import com.example.SocialMedia.entity.Role;
+import com.example.SocialMedia.payload.response.RoleUserResponse;
 import com.example.SocialMedia.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/roles")
@@ -23,5 +28,10 @@ public class RoleController {
         roleService.createRole(role);
 
         return "Role Created Successfully";
+    }
+
+    @GetMapping("/{roleName}/users")
+    public List<RoleUserResponse> getUsersByRole(@PathVariable String roleName) {
+        return roleService.getUsersByRole(roleName);
     }
 }
